@@ -1,0 +1,963 @@
+﻿@{
+    ViewBag.Title = "User Management";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management | Admin Panel</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #F5F7FB;
+            color: #1E293B;
+            line-height: 1.5;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 28px 32px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1E2A5E, #3B4B9A);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .page-title p {
+            font-size: 14px;
+            color: #5B6E8C;
+            margin-top: 4px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 18px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 160px;
+            border: 1px solid #E9EEF3;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 20px -12px rgba(0,0,0,0.1);
+            }
+
+        .stat-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #5F7F9E;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1E2F5E;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #EFF3F8;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .card-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid #EEF2F8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            background: #FEFEFE;
+        }
+
+        .search-area {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+            .search-box i {
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #99AAC2;
+                font-size: 14px;
+            }
+
+        #searchBox {
+            padding: 10px 16px 10px 38px;
+            border-radius: 40px;
+            border: 1.5px solid #E2E8F2;
+            background: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            width: 260px;
+            transition: all 0.2s;
+        }
+
+            #searchBox:focus {
+                outline: none;
+                border-color: #3B4B9A;
+                box-shadow: 0 0 0 3px rgba(59, 75, 154, 0.1);
+            }
+
+        .btn-add-modern {
+            background: linear-gradient(105deg, #1E2A5E, #2C3E7C);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+            .btn-add-modern i {
+                font-size: 14px;
+            }
+
+            .btn-add-modern:hover {
+                background: linear-gradient(105deg, #141f48, #25356b);
+                transform: scale(0.98);
+                box-shadow: 0 4px 10px rgba(30,42,94,0.2);
+            }
+
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 0;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+            .user-table th {
+                text-align: left;
+                padding: 16px 20px;
+                background-color: #FAFCFE;
+                font-weight: 600;
+                color: #3A5478;
+                border-bottom: 1px solid #E9EDF3;
+                font-size: 13px;
+            }
+
+            .user-table td {
+                padding: 16px 20px;
+                border-bottom: 1px solid #F0F4FA;
+                color: #1E2F5E;
+                vertical-align: middle;
+            }
+
+            .user-table tr:hover td {
+                background-color: #F9FBFE;
+            }
+
+        .username-cell {
+            font-weight: 700;
+            color: #0F2B4A;
+        }
+
+        .pill-country {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #EEF2FF;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #2C3E7C;
+        }
+
+            .pill-country i {
+                font-size: 11px;
+            }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 8px;
+            border-radius: 30px;
+            transition: all 0.15s;
+        }
+
+        .btn-edit-action {
+            color: #2C5F8A;
+        }
+
+            .btn-edit-action:hover {
+                background: #EFF6FF;
+                color: #1A4B70;
+            }
+
+        .btn-delete-action {
+            color: #C2414A;
+        }
+
+            .btn-delete-action:hover {
+                background: #FFF2F2;
+                color: #A1242E;
+            }
+
+        .pagination-wrap {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 28px;
+            border-top: 1px solid #EEF2F8;
+            background: white;
+        }
+
+            .pagination-wrap button {
+                background: white;
+                border: 1px solid #DCE3EC;
+                padding: 8px 18px;
+                border-radius: 40px;
+                font-weight: 500;
+                font-size: 13px;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: #2E4A7A;
+            }
+
+                .pagination-wrap button:hover {
+                    background: #F0F4FA;
+                    border-color: #B9C8E0;
+                }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(20, 30, 55, 0.6);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.2s;
+        }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+        .modal-container {
+            background: white;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 520px;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3);
+            animation: fadeSlideUp 0.2s ease;
+            overflow: hidden;
+        }
+
+        @@keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 24px 28px 12px 28px;
+            border-bottom: 1px solid #EDF2F7;
+        }
+
+            .modal-header h3 {
+                font-size: 22px;
+                font-weight: 700;
+                background: linear-gradient(135deg, #1E2A5E, #2E4172);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+            }
+
+        .modal-body {
+            padding: 24px 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+            .form-group label {
+                display: block;
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: #2C405C;
+            }
+
+                .form-group label .required-star {
+                    color: #E1524D;
+                    margin-left: 2px;
+                }
+
+        .modern-input, .modern-select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border: 1.5px solid #E2E8F0;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            background: #FFFFFF;
+            transition: 0.2s;
+        }
+
+            .modern-input:focus, .modern-select:focus {
+                outline: none;
+                border-color: #3B4B9A;
+                box-shadow: 0 0 0 3px rgba(59, 75, 154, 0.15);
+            }
+
+            .modern-select:disabled {
+                background-color: #F8FAFE;
+                color: #8BA0BC;
+                cursor: not-allowed;
+            }
+
+        .modal-footer {
+            padding: 16px 28px 28px 28px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: #FFFFFF;
+        }
+
+        .btn-cancel-modern {
+            background: #F1F4F9;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            color: #4B6584;
+            transition: 0.2s;
+        }
+
+            .btn-cancel-modern:hover {
+                background: #E6ECF3;
+            }
+
+        .btn-save-modern {
+            background: #1E2A5E;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .btn-save-modern:hover {
+                background: #121E48;
+                transform: scale(0.97);
+            }
+
+        .delete-modal-icon {
+            font-size: 48px;
+            color: #E1524D;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .delete-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .delete-modal-sub {
+            text-align: center;
+            color: #5F7F9E;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .toast-stack {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast-notify {
+            background: white;
+            border-radius: 60px;
+            padding: 12px 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+            animation: slideInRight 0.25s ease;
+            border-left: 4px solid;
+        }
+
+        .toast-success {
+            border-left-color: #2B9348;
+            color: #14532d;
+            background: #F0FDF4;
+        }
+
+        .toast-error {
+            border-left-color: #E1524D;
+            color: #991b1b;
+            background: #FEF2F2;
+        }
+
+        @@keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .empty-row td {
+            text-align: center;
+            padding: 48px !important;
+            color: #8EA3C2;
+            font-weight: 500;
+        }
+
+        i {
+            font-size: 14px;
+        }
+
+        @@media (max-width: 680px) {
+            .app-container {
+                padding: 16px;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-area {
+                justify-content: space-between;
+            }
+
+            #searchBox {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="page-title">
+                <h1><i class="fas fa-users" style="margin-right: 12px; color: #2C3E7C;"></i> User Management</h1>
+               
+            </div>
+        </div>
+
+    <div class="main-card">
+        <div class="card-header">
+            <div class="search-area">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchBox" placeholder="Search by name, country..." autocomplete="off">
+                </div>
+            </div>
+            <button class="btn-add-modern" style="background:#6B7280" onclick="openAuditModal()">
+                <i class="fas fa-history"></i> Audit Log
+            </button>
+            <button class="btn-add-modern" onclick="showAddForm()"><i class="fas fa-plus-circle"></i> Add New User</button>
+
+        </div>
+        <div class="table-wrapper">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Sl.No</th>
+                        <th>User Name</th>
+                        <th>Country</th>
+                        <th>State</th>
+                        <th>District</th>
+                        <th style="width:130px">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTbody">
+                    <tr class="empty-row"><td colspan="5"><i class="fas fa-spinner fa-pulse"></i> Loading users...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-overlay" id="auditModal">
+            <div class="modal-container" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-history"></i> Audit Log</h3>
+                </div>
+                <div class="modal-body">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Old Data</th>
+                                <th>New Data</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTbody">
+                            <tr class="empty-row">
+                                <td colspan="4">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-cancel-modern" onclick="closeAuditModal()">Close</button>
+                </div>
+            </div>
+        </div>
+        <div class="pagination-wrap">
+            <button onclick="prevPage()"><i class="fas fa-chevron-left"></i> Prev</button>
+            <span style="font-size:13px; color:#5C6F8F;"><span id="pageInfo">1</span> / <span id="totalPages">1</span></span>
+            <button onclick="nextPage()">Next <i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+    </div>
+
+    <div class="modal-overlay" id="userModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="formTitle"><i class="fas fa-user-plus"></i> Add New User</h3>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="hdnUserId" value="0" />
+                <div class="form-group">
+                    <label>Full Name <span class="required-star">*</span></label>
+                    <input type="text" id="txtUserName" class="modern-input" placeholder="e.g., John Carter" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Country <span class="required-star">*</span></label>
+                    <select id="ddlCountry" class="modern-select"></select>
+                </div>
+                <div class="form-group">
+                    <label>State <span class="required-star">*</span></label>
+                    <select id="ddlState" class="modern-select" disabled><option value="">-- Select Country first --</option></select>
+                </div>
+                <div class="form-group">
+                    <label>District <span class="required-star">*</span></label>
+                    <select id="ddlDistrict" class="modern-select" disabled><option value="">-- Select State first --</option></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel-modern" onclick="closeUserModal()"><i class="fas fa-times"></i> Cancel</button>
+                <button class="btn-save-modern" onclick="saveUser()"><i class="fas fa-save"></i> Save User</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modalBg">
+        <div class="modal-container" style="max-width: 400px;">
+            <div class="modal-body" style="text-align: center;">
+                <div class="delete-modal-icon"><i class="fas fa-trash-alt"></i></div>
+                <div class="delete-modal-title">Confirm Delete</div>
+                <div class="delete-modal-sub" id="mSub">This action cannot be undone.</div>
+                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 18px;">
+                    <button class="btn-cancel-modern" onclick="closeModal()"><i class="fas fa-ban"></i> Cancel</button>
+                    <button class="btn-save-modern" id="btnConfirm" style="background:#C2414A;"><i class="fas fa-exclamation-triangle"></i> Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="toast-stack" id="toastContainer"></div>
+
+    <script>
+        let _delId = 0;
+        let currentPage = 1;
+        let rowsPerPage = 6;
+        let allUsersData = [];
+        let filteredUsers = [];
+
+        function showToast(type, message) {
+            const container = $('#toastContainer');
+            const toastId = 'toast_' + Date.now();
+            const toastClass = type === 'success' ? 'toast-success' : 'toast-error';
+            const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
+            const toastHtml = `<div class="toast-notify ${toastClass}" id="${toastId}">${icon} <span>${escapeHtml(message)}</span></div>`;
+            container.append(toastHtml);
+            setTimeout(() => {
+                $(`#${toastId}`).fadeOut(300, function () { $(this).remove(); });
+            }, 3200);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function loadUsers() {
+            $.getJSON('/User/GetAllUsers', function (data) {
+                if (!data || data.length === 0) {
+                    allUsersData = [];
+                    filteredUsers = [];
+                    renderUserTable();
+                    updateStatsAndPagination();
+                    return;
+                }
+                allUsersData = data;
+                filteredUsers = [...allUsersData];
+                updateStatsAndPagination();
+                applySearchAndRender();
+            }).fail(() => {
+                showToast('error', 'Failed to load users. Check API connection.');
+                $('#userTbody').html('<tr class="empty-row"><td colspan="5"><i class="fas fa-plug"></i> Unable to fetch data.</td></tr>');
+            });
+        }
+
+        function updateStatsAndPagination() {
+            $('#totalUsersCount').text(allUsersData.length);
+            $('#statsRow').show();
+            const totalPagesVal = Math.ceil(filteredUsers.length / rowsPerPage) || 1;
+            $('#totalPages').text(totalPagesVal);
+            if (currentPage > totalPagesVal) currentPage = totalPagesVal;
+            $('#pageInfo').text(currentPage);
+        }
+
+        function applySearchAndRender() {
+            const keyword = $('#searchBox').val().toLowerCase();
+            if (!keyword.trim()) {
+                filteredUsers = [...allUsersData];
+            } else {
+                filteredUsers = allUsersData.filter(u =>
+                    (u.UserName && u.UserName.toLowerCase().includes(keyword)) ||
+                    (u.CountryName && u.CountryName.toLowerCase().includes(keyword)) ||
+                    (u.StateName && u.StateName.toLowerCase().includes(keyword))
+                );
+            }
+            updateStatsAndPagination();
+            renderUserTable();
+        }
+
+        function renderUserTable() {
+            const tbody = $('#userTbody');
+            tbody.empty();
+            if (!filteredUsers.length) {
+                tbody.html('<tr class="empty-row"><td colspan="5"><i class="fas fa-user-slash"></i> No matching users found.</td></tr>');
+                return;
+            }
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageItems = filteredUsers.slice(start, end);
+            $.each(pageItems, function (i, u) {
+
+                let slno = ((currentPage - 1) * rowsPerPage) + i + 1;
+
+                const countryDisplay = u.CountryName || '—';
+                const stateDisplay = u.StateName || '—';
+                const districtDisplay = u.DistrictName || '—';
+
+                const row = `<tr>
+            <td>${slno}</td>
+            <td class="username-cell">
+                <i class="fas fa-user-circle" style="margin-right: 8px; color:#5F7F9E;"></i>
+                ${escapeHtml(u.UserName)}
+            </td>
+            <td><span class="pill-country"><i class="fas fa-globe-americas"></i> ${escapeHtml(countryDisplay)}</span></td>
+            <td><i class="fas fa-map-marker-alt" style="margin-right: 5px; color:#8196B0;"></i> ${escapeHtml(stateDisplay)}</td>
+            <td>${escapeHtml(districtDisplay)}</td>
+            <td class="action-buttons">
+                <button class="btn-icon btn-edit-action" onclick="editUser(${u.UserId})"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn-icon btn-delete-action" onclick="askDelete(${u.UserId}, '${escapeHtml(u.UserName).replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i> Delete</button>
+            </td>
+        </tr>`;
+
+                tbody.append(row);
+            });
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderUserTable();
+                $('#pageInfo').text(currentPage);
+            }
+        }
+
+        function nextPage() {
+            const total = Math.ceil(filteredUsers.length / rowsPerPage) || 1;
+            if (currentPage < total) {
+                currentPage++;
+                renderUserTable();
+                $('#pageInfo').text(currentPage);
+            }
+        }
+
+        $('#searchBox').on('keyup', function () {
+            currentPage = 1;
+            applySearchAndRender();
+        });
+
+        function loadCountries(selectedId) {
+            return $.getJSON('/User/GetCountries', function (data) {
+                const dd = $('#ddlCountry');
+                dd.html('<option value="">-- Select Country --</option>');
+                $.each(data, function (i, c) {
+                    dd.append(`<option value="${c.Id}" ${c.Id == selectedId ? 'selected' : ''}>${escapeHtml(c.Name)}</option>`);
+                });
+                if (selectedId) dd.trigger('change');
+            });
+        }
+
+        $('#ddlCountry').on('change', function () {
+            const cid = $(this).val();
+            const stateSelect = $('#ddlState');
+            const districtSelect = $('#ddlDistrict');
+            stateSelect.prop('disabled', true).html('<option value="">-- Select State --</option>');
+            districtSelect.prop('disabled', true).html('<option value="">-- Select District --</option>');
+            if (!cid) return;
+            $.getJSON('/User/GetStates', { countryId: cid }, function (states) {
+                stateSelect.html('<option value="">-- Select State --</option>');
+                $.each(states, function (i, s) { stateSelect.append(`<option value="${s.Id}">${escapeHtml(s.Name)}</option>`); });
+                stateSelect.prop('disabled', false);
+            }).fail(() => showToast('error', 'Failed to load states'));
+        });
+
+        $('#ddlState').on('change', function () {
+            const sid = $(this).val();
+            const districtSelect = $('#ddlDistrict');
+            districtSelect.prop('disabled', true).html('<option value="">-- Select District --</option>');
+            if (!sid) return;
+            $.getJSON('/User/GetDistricts', { stateId: sid }, function (districts) {
+                districtSelect.html('<option value="">-- Select District --</option>');
+                $.each(districts, function (i, d) { districtSelect.append(`<option value="${d.Id}">${escapeHtml(d.Name)}</option>`); });
+                districtSelect.prop('disabled', false);
+            }).fail(() => showToast('error', 'Failed to load districts'));
+        });
+
+        function showAddForm() {
+            $('#formTitle').html('<i class="fas fa-user-plus"></i> Add New User');
+            $('#hdnUserId').val(0);
+            $('#txtUserName').val('');
+            loadCountries(null);
+            $('#ddlState').html('<option value="">-- Select State --</option>').prop('disabled', true);
+            $('#ddlDistrict').html('<option value="">-- Select District --</option>').prop('disabled', true);
+            $('#userModal').addClass('show');
+        }
+
+        function editUser(id) {
+            $.getJSON('/User/GetUserById', { id: id }, function (u) {
+                $('#hdnUserId').val(u.UserId);
+                $('#txtUserName').val(u.UserName);
+                loadCountries(u.CountryId).then(() => {
+                    setTimeout(() => {
+                        $.getJSON('/User/GetStates', { countryId: u.CountryId }, function (states) {
+                            const sd = $('#ddlState');
+                            sd.html('<option value="">-- Select State --</option>');
+                            $.each(states, function (i, s) {
+                                sd.append(`<option value="${s.Id}" ${s.Id == u.StateId ? 'selected' : ''}>${escapeHtml(s.Name)}</option>`);
+                            });
+                            sd.prop('disabled', false);
+                            $.getJSON('/User/GetDistricts', { stateId: u.StateId }, function (dists) {
+                                const dd = $('#ddlDistrict');
+                                dd.html('<option value="">-- Select District --</option>');
+                                $.each(dists, function (i, d) {
+                                    dd.append(`<option value="${d.Id}" ${d.Id == u.DistrictId ? 'selected' : ''}>${escapeHtml(d.Name)}</option>`);
+                                });
+                                dd.prop('disabled', false);
+                            });
+                        });
+                    }, 200);
+                });
+                $('#formTitle').html('<i class="fas fa-user-edit"></i> Edit User');
+                $('#userModal').addClass('show');
+            }).fail(() => showToast('error', 'User not found'));
+        }
+
+        function closeUserModal() { $('#userModal').removeClass('show'); }
+        function closeModal() { $('#modalBg').removeClass('show'); _delId = 0; }
+
+        function askDelete(id, name) {
+            _delId = id;
+            $('#mSub').text(`Permanently delete "${name}"? This action is irreversible.`);
+            $('#modalBg').addClass('show');
+        }
+
+        $('#btnConfirm').off('click').on('click', function () {
+            if (!_delId) return;
+            $.post('/User/DeleteUser', { id: _delId }, function (res) {
+                if (res && res.success) {
+                    showToast('success', res.message || 'User deleted');
+                    loadUsers();
+                } else {
+                    showToast('error', res.message || 'Delete failed');
+                }
+                closeModal();
+            }).fail(() => { showToast('error', 'Server error while deleting'); closeModal(); });
+        });
+        function openAuditModal() {
+            $('#auditModal').addClass('show');
+            loadAuditLogs();
+        }
+
+        function closeAuditModal() {
+            $('#auditModal').removeClass('show');
+        }
+
+        function loadAuditLogs() {
+            $.getJSON('/User/GetAuditLogs', function (data) {
+
+                const tbody = $('#auditTbody');
+                tbody.empty();
+
+                if (!data || data.length === 0) {
+                    tbody.html('<tr class="empty-row"><td colspan="4">No audit data</td></tr>');
+                    return;
+                }
+
+                $.each(data, function (i, a) {
+
+                    const row = `<tr>
+                <td>${a.ActionType}</td>
+                <td>${a.OldData || '-'}</td>
+                <td>${a.NewData || '-'}</td>
+                <td>${formatDate(a.DoneDate)}</td>
+            </tr>`;
+
+                    tbody.append(row);
+                });
+            });
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleString();
+        }
+        function saveUser() {
+            const id = $('#hdnUserId').val();
+            const userName = $('#txtUserName').val().trim();
+            const countryId = $('#ddlCountry').val();
+            const stateId = $('#ddlState').val();
+            const districtId = $('#ddlDistrict').val();
+
+            if (!userName) { showToast('error', 'User Name is required'); return; }
+            if (!countryId) { showToast('error', 'Please select Country'); return; }
+            if (!stateId) { showToast('error', 'Please select State'); return; }
+            if (!districtId) { showToast('error', 'Please select District'); return; }
+
+            const payload = { UserId: parseInt(id) || 0, UserName: userName, CountryId: parseInt(countryId), StateId: parseInt(stateId), DistrictId: parseInt(districtId) };
+            const url = (id == 0 || id === '0') ? '/User/SaveUser' : '/User/UpdateUser';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    if (res && (res.success === true || res.message)) {
+                        showToast('success', res.message || 'User saved successfully');
+                        closeUserModal();
+                        loadUsers();
+                    } else {
+                        showToast('error', res?.message || 'Operation failed');
+                    }
+                },
+                error: () => showToast('error', 'Server error, please try again')
+            });
+        }
+
+        $('.modal-overlay').on('click', function (e) {
+            if (e.target === this) $(this).removeClass('show');
+        });
+
+        $(function () { loadUsers(); });
+    </script>
+</body>
+</html>
